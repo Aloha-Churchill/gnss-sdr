@@ -4,39 +4,26 @@
  * Protocol Buffers
  * \author Carles Fernandez-Prades, 2019. cfernandez(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
-#define GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
+#ifndef GNSS_SDR_SERDES_GNSS_SYNCHRO_H
+#define GNSS_SDR_SERDES_GNSS_SYNCHRO_H
 
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
 #include <array>
+#include <string>
+#include <utility>
 #include <vector>
-
 
 /*!
  * \brief This class implements serialization and deserialization of
@@ -57,23 +44,23 @@ public:
         google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
+    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other) noexcept  //!< Copy constructor
     {
         this->observables = other.observables;
     }
 
-    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs)  //!< Copy assignment operator
+    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs) noexcept  //!< Copy assignment operator
     {
         this->observables = rhs.observables;
         return *this;
     }
 
-    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other)  //!< Move constructor
+    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other) noexcept  //!< Move constructor
     {
         this->observables = std::move(other.observables);
     }
 
-    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other)  //!< Move assignment operator
+    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other) noexcept  //!< Move assignment operator
     {
         if (this != &other)
             {
@@ -113,6 +100,7 @@ public:
                 obs->set_prompt_q(gs.Prompt_Q);
                 obs->set_cn0_db_hz(gs.CN0_dB_hz);
                 obs->set_carrier_doppler_hz(gs.Carrier_Doppler_hz);
+                obs->set_carrier_phase_rads(gs.Carrier_phase_rads);
                 obs->set_code_phase_samples(gs.Code_phase_samples);
                 obs->set_tracking_sample_counter(gs.Tracking_sample_counter);
                 obs->set_flag_valid_symbol_output(gs.Flag_valid_symbol_output);
@@ -124,6 +112,7 @@ public:
                 obs->set_pseudorange_m(gs.Pseudorange_m);
                 obs->set_rx_time(gs.RX_time);
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
+                obs->set_flag_pll_180_deg_phase_locked(gs.Flag_PLL_180_deg_phase_locked);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
             }
         observables.SerializeToString(&data);
@@ -156,6 +145,8 @@ public:
                 gs.Prompt_Q = gs_read.prompt_q();
                 gs.CN0_dB_hz = gs_read.cn0_db_hz();
                 gs.Carrier_Doppler_hz = gs_read.carrier_doppler_hz();
+                gs.Carrier_phase_rads = gs_read.carrier_phase_rads();
+                gs.Code_phase_samples = gs_read.code_phase_samples();
                 gs.Tracking_sample_counter = gs_read.tracking_sample_counter();
                 gs.Flag_valid_symbol_output = gs_read.flag_valid_symbol_output();
                 gs.correlation_length_ms = gs_read.correlation_length_ms();
@@ -166,6 +157,7 @@ public:
                 gs.Pseudorange_m = gs_read.pseudorange_m();
                 gs.RX_time = gs_read.rx_time();
                 gs.Flag_valid_pseudorange = gs_read.flag_valid_pseudorange();
+                gs.Flag_PLL_180_deg_phase_locked = gs_read.flag_pll_180_deg_phase_locked();
                 gs.interp_TOW_ms = gs_read.interp_tow_ms();
 
                 vgs.push_back(gs);
@@ -177,4 +169,4 @@ private:
     gnss_sdr::Observables observables{};
 };
 
-#endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
+#endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H

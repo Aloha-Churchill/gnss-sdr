@@ -3,29 +3,15 @@
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "spirent_motion_csv_dump_reader.h"
@@ -36,46 +22,46 @@
 
 
 Spirent_Motion_Csv_Dump_Reader::Spirent_Motion_Csv_Dump_Reader()
+    : header_lines(2),
+      TOW_ms(0.0),
+      Pos_X(0.0),
+      Pos_Y(0.0),
+      Pos_Z(0.0),
+      Vel_X(0.0),
+      Vel_Y(0.0),
+      Vel_Z(0.0),
+      Acc_X(0.0),
+      Acc_Y(0.0),
+      Acc_Z(0.0),
+      Jerk_X(0.0),
+      Jerk_Y(0.0),
+      Jerk_Z(0.0),
+      Lat(0.0),
+      Long(0.0),
+      Height(0.0),
+      Heading(0.0),
+      Elevation(0.0),
+      Bank(0.0),
+      Ang_vel_X(0.0),
+      Ang_vel_Y(0.0),
+      Ang_vel_Z(0.0),
+      Ang_acc_X(0.0),
+      Ang_acc_Y(0.0),
+      Ang_acc_Z(0.0),
+      Ant1_Pos_X(0.0),
+      Ant1_Pos_Y(0.0),
+      Ant1_Pos_Z(0.0),
+      Ant1_Vel_X(0.0),
+      Ant1_Vel_Y(0.0),
+      Ant1_Vel_Z(0.0),
+      Ant1_Acc_X(0.0),
+      Ant1_Acc_Y(0.0),
+      Ant1_Acc_Z(0.0),
+      Ant1_Lat(0.0),
+      Ant1_Long(0.0),
+      Ant1_Height(0.0),
+      Ant1_DOP(0.0)
 {
-    header_lines = 2;
-    TOW_ms = 0.0;
-    Pos_X = 0.0;
-    Pos_Y = 0.0;
-    Pos_Z = 0.0;
-    Vel_X = 0.0;
-    Vel_Y = 0.0;
-    Vel_Z = 0.0;
-    Acc_X = 0.0;
-    Acc_Y = 0.0;
-    Acc_Z = 0.0;
-    Jerk_X = 0.0;
-    Jerk_Y = 0.0;
-    Jerk_Z = 0.0;
-    Lat = 0.0;
-    Long = 0.0;
-    Height = 0.0;
-    Heading = 0.0;
-    Elevation = 0.0;
-    Bank = 0.0;
-    Ang_vel_X = 0.0;
-    Ang_vel_Y = 0.0;
-    Ang_vel_Z = 0.0;
-    Ang_acc_X = 0.0;
-    Ang_acc_Y = 0.0;
-    Ang_acc_Z = 0.0;
-    Ant1_Pos_X = 0.0;
-    Ant1_Pos_Y = 0.0;
-    Ant1_Pos_Z = 0.0;
-    Ant1_Vel_X = 0.0;
-    Ant1_Vel_Y = 0.0;
-    Ant1_Vel_Z = 0.0;
-    Ant1_Acc_X = 0.0;
-    Ant1_Acc_Y = 0.0;
-    Ant1_Acc_Z = 0.0;
-    Ant1_Lat = 0.0;
-    Ant1_Long = 0.0;
-    Ant1_Height = 0.0;
-    Ant1_DOP = 0.0;
 }
 
 
@@ -237,7 +223,7 @@ bool Spirent_Motion_Csv_Dump_Reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Spirent CSV dump Log file: " << d_dump_filename << std::endl;
+                    std::cout << "Problem opening Spirent CSV dump Log file: " << d_dump_filename << '\n';
                     return false;
                 }
         }

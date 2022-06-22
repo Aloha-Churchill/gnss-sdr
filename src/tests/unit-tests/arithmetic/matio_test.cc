@@ -5,54 +5,22 @@
  * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
+#include "gnss_sdr_filesystem.h"
 #include <gnuradio/gr_complex.h>
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <array>
-
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <boost/system/error_code.hpp>       // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
-#endif
 
 TEST(MatioTest, WriteAndReadDoubles)
 {
@@ -163,18 +131,18 @@ TEST(MatioTest, WriteAndReadGrComplex)
     auto *x_read_real = reinterpret_cast<float *>(x_read_st->Re);
     auto *x_read_imag = reinterpret_cast<float *>(x_read_st->Im);
     std::vector<gr_complex> x_v_read;
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int k = 0; k < size; k++)
         {
-            x_v_read.emplace_back(x_read_real[i], x_read_imag[i]);
+            x_v_read.emplace_back(x_read_real[k], x_read_imag[k]);
         }
 
     Mat_Close(matfp_read);
     Mat_VarFree(matvar_read);
 
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int k = 0; k < size; k++)
         {
-            EXPECT_FLOAT_EQ(x_v[i].real(), x_v_read[i].real());
-            EXPECT_FLOAT_EQ(x_v[i].imag(), x_v_read[i].imag());
+            EXPECT_FLOAT_EQ(x_v[k].real(), x_v_read[k].real());
+            EXPECT_FLOAT_EQ(x_v[k].imag(), x_v_read[k].imag());
         }
     errorlib::error_code ec;
     ASSERT_EQ(fs::remove(fs::path(filename), ec), true);

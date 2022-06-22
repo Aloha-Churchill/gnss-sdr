@@ -19,39 +19,19 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * SPDX-License-Identifier: BSD-2-Clause
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
-#ifndef GNSS_SDR_RTKLIB_PNTPOS_H_
-#define GNSS_SDR_RTKLIB_PNTPOS_H_
+#ifndef GNSS_SDR_RTKLIB_PNTPOS_H
+#define GNSS_SDR_RTKLIB_PNTPOS_H
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
@@ -80,30 +60,30 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var);
 
 /* ionospheric correction ------------------------------------------------------
-* compute ionospheric correction
-* args   : gtime_t time     I   time
-*          nav_t  *nav      I   navigation data
-*          int    sat       I   satellite number
-*          double *pos      I   receiver position {lat,lon,h} (rad|m)
-*          double *azel     I   azimuth/elevation angle {az,el} (rad)
-*          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
-*          double *ion      O   ionospheric delay (L1) (m)
-*          double *var      O   ionospheric delay (L1) variance (m^2)
-* return : status(1:ok,0:error)
-*-----------------------------------------------------------------------------*/
+ * compute ionospheric correction
+ * args   : gtime_t time     I   time
+ *          nav_t  *nav      I   navigation data
+ *          int    sat       I   satellite number
+ *          double *pos      I   receiver position {lat,lon,h} (rad|m)
+ *          double *azel     I   azimuth/elevation angle {az,el} (rad)
+ *          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
+ *          double *ion      O   ionospheric delay (L1) (m)
+ *          double *var      O   ionospheric delay (L1) variance (m^2)
+ * return : status(1:ok,0:error)
+ *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     const double *azel, int ionoopt, double *ion, double *var);
 /* tropospheric correction -----------------------------------------------------
-* compute tropospheric correction
-* args   : gtime_t time     I   time
-*          nav_t  *nav      I   navigation data
-*          double *pos      I   receiver position {lat,lon,h} (rad|m)
-*          double *azel     I   azimuth/elevation angle {az,el} (rad)
-*          int    tropopt   I   tropospheric correction option (TROPOPT_???)
-*          double *trp      O   tropospheric delay (m)
-*          double *var      O   tropospheric delay variance (m^2)
-* return : status(1:ok,0:error)
-*-----------------------------------------------------------------------------*/
+ * compute tropospheric correction
+ * args   : gtime_t time     I   time
+ *          nav_t  *nav      I   navigation data
+ *          double *pos      I   receiver position {lat,lon,h} (rad|m)
+ *          double *azel     I   azimuth/elevation angle {az,el} (rad)
+ *          int    tropopt   I   tropospheric correction option (TROPOPT_???)
+ *          double *trp      O   tropospheric delay (m)
+ *          double *var      O   tropospheric delay variance (m^2)
+ * return : status(1:ok,0:error)
+ *-----------------------------------------------------------------------------*/
 int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
     const double *azel, int tropopt, double *trp, double *var);
 
@@ -142,24 +122,24 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *azel, const int *vsat);
 
 /*!
-* \brief single-point positioning
-* compute receiver position, velocity, clock bias by single-point positioning
-* with pseudorange and doppler observables
-* args   : obsd_t *obs      I   observation data
-*          int    n         I   number of observation data
-*          nav_t  *nav      I   navigation data
-*          prcopt_t *opt    I   processing options
-*          sol_t  *sol      IO  solution
-*          double *azel     IO  azimuth/elevation angle (rad) (NULL: no output)
-*          ssat_t *ssat     IO  satellite status              (NULL: no output)
-*          char   *msg      O   error message for error exit
-* return : status(1:ok,0:error)
-* notes  : assuming sbas-gps, galileo-gps, qzss-gps, compass-gps time offset and
-*          receiver bias are negligible (only involving glonass-gps time offset
-*          and receiver bias)
-*/
+ * \brief single-point positioning
+ * compute receiver position, velocity, clock bias by single-point positioning
+ * with pseudorange and doppler observables
+ * args   : obsd_t *obs      I   observation data
+ *          int    n         I   number of observation data
+ *          nav_t  *nav      I   navigation data
+ *          prcopt_t *opt    I   processing options
+ *          sol_t  *sol      IO  solution
+ *          double *azel     IO  azimuth/elevation angle (rad) (NULL: no output)
+ *          ssat_t *ssat     IO  satellite status              (NULL: no output)
+ *          char   *msg      O   error message for error exit
+ * return : status(1:ok,0:error)
+ * notes  : assuming sbas-gps, galileo-gps, qzss-gps, compass-gps time offset and
+ *          receiver bias are negligible (only involving glonass-gps time offset
+ *          and receiver bias)
+ */
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
     char *msg);
 
-#endif /* GNSS_SDR_RTKLIB_PNTPOS_H_ */
+#endif  // GNSS_SDR_RTKLIB_PNTPOS_H

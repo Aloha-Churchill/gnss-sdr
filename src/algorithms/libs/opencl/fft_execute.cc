@@ -1,49 +1,12 @@
-
-//
-// File:       fft_execute.cpp
-//
-// Version:    <1.0>
-//
-// Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple Inc. ("Apple")
-//             in consideration of your agreement to the following terms, and your use,
-//             installation, modification or redistribution of this Apple software
-//             constitutes acceptance of these terms.  If you do not agree with these
-//             terms, please do not use, install, modify or redistribute this Apple
-//             software.¬
-//
-//             In consideration of your agreement to abide by the following terms, and
-//             subject to these terms, Apple grants you a personal, non - exclusive
-//             license, under Apple's copyrights in this original Apple software ( the
-//             "Apple Software" ), to use, reproduce, modify and redistribute the Apple
-//             Software, with or without modifications, in source and / or binary forms;
-//             provided that if you redistribute the Apple Software in its entirety and
-//             without modifications, you must retain this notice and the following text
-//             and disclaimers in all such redistributions of the Apple Software. Neither
-//             the name, trademarks, service marks or logos of Apple Inc. may be used to
-//             endorse or promote products derived from the Apple Software without specific
-//             prior written permission from Apple.  Except as expressly stated in this
-//             notice, no other rights or licenses, express or implied, are granted by
-//             Apple herein, including but not limited to any patent rights that may be
-//             infringed by your derivative works or by other works in which the Apple
-//             Software may be incorporated.
-//
-//             The Apple Software is provided by Apple on an "AS IS" basis.  APPLE MAKES NO
-//             WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE IMPLIED
-//             WARRANTIES OF NON - INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
-//             PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND OPERATION
-//             ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
-//
-//             IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL OR
-//             CONSEQUENTIAL DAMAGES ( INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//             SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//             INTERRUPTION ) ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION, MODIFICATION
-//             AND / OR DISTRIBUTION OF THE APPLE SOFTWARE, HOWEVER CAUSED AND WHETHER
-//             UNDER THEORY OF CONTRACT, TORT ( INCLUDING NEGLIGENCE ), STRICT LIABILITY OR
-//             OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Copyright ( C ) 2008 Apple Inc. All Rights Reserved.
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+ * \file fft_execute.cc
+ *
+ * Version:    <1.0>
+ *
+ * Copyright ( C ) 2008 Apple Inc. All Rights Reserved.
+ * SPDX-License-Identifier: LicenseRef-Apple-Permissive
+ *
+ */
 
 
 #include "clFFT.h"
@@ -65,12 +28,15 @@ allocateTemporaryBufferInterleaved(cl_fft_plan *plan, cl_uint batchSize)
             size_t tmpLength = plan->n.x * plan->n.y * plan->n.z * batchSize * 2 * sizeof(cl_float);
 
             if (plan->tempmemobj)
-                clReleaseMemObject(plan->tempmemobj);
+                {
+                    clReleaseMemObject(plan->tempmemobj);
+                }
 
             plan->tempmemobj = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &err);
         }
     return err;
 }
+
 
 static cl_int
 allocateTemporaryBufferPlannar(cl_fft_plan *plan, cl_uint batchSize)
@@ -83,10 +49,14 @@ allocateTemporaryBufferPlannar(cl_fft_plan *plan, cl_uint batchSize)
             size_t tmpLength = plan->n.x * plan->n.y * plan->n.z * batchSize * sizeof(cl_float);
 
             if (plan->tempmemobj_real)
-                clReleaseMemObject(plan->tempmemobj_real);
+                {
+                    clReleaseMemObject(plan->tempmemobj_real);
+                }
 
             if (plan->tempmemobj_imag)
-                clReleaseMemObject(plan->tempmemobj_imag);
+                {
+                    clReleaseMemObject(plan->tempmemobj_imag);
+                }
 
             plan->tempmemobj_real = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &err);
             plan->tempmemobj_imag = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &terr);
@@ -94,6 +64,7 @@ allocateTemporaryBufferPlannar(cl_fft_plan *plan, cl_uint batchSize)
         }
     return err;
 }
+
 
 void getKernelWorkDimensions(cl_fft_plan *plan, cl_fft_kernel_info *kernelInfo, cl_int *batchSize, size_t *gWorkItems, size_t *lWorkItems)
 {
@@ -120,6 +91,7 @@ void getKernelWorkDimensions(cl_fft_plan *plan, cl_fft_kernel_info *kernelInfo, 
     *gWorkItems = numWorkGroups * *lWorkItems;
 }
 
+
 cl_int
 clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, clFFT_Direction dir,
     cl_mem data_in, cl_mem data_out,
@@ -128,16 +100,21 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
     int s;
     auto *plan = (cl_fft_plan *)Plan;
     if (plan->format != clFFT_InterleavedComplexFormat)
-        return CL_INVALID_VALUE;
+        {
+            return CL_INVALID_VALUE;
+        }
 
     cl_int err;
-    size_t gWorkItems, lWorkItems;
+    size_t gWorkItems;
+    size_t lWorkItems;
     int inPlaceDone;
 
     cl_int isInPlace = data_in == data_out ? 1 : 0;
 
     if ((err = allocateTemporaryBufferInterleaved(plan, batchSize)) != CL_SUCCESS)
-        return err;
+        {
+            return err;
+        }
 
     cl_mem memObj[3];
     memObj[0] = data_in;
@@ -182,7 +159,9 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
 
                     err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
-                        return err;
+                        {
+                            return err;
+                        }
 
                     currRead = (currWrite == 1) ? 1 : 2;
                     currWrite = (currWrite == 1) ? 2 : 1;
@@ -205,7 +184,9 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
 
                     err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
-                        return err;
+                        {
+                            return err;
+                        }
 
                     currRead = 1;
                     currWrite = 1;
@@ -217,6 +198,7 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
     return err;
 }
 
+
 cl_int
 clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, clFFT_Direction dir,
     cl_mem data_in_real, cl_mem data_in_imag, cl_mem data_out_real, cl_mem data_out_imag,
@@ -226,16 +208,21 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
     auto *plan = (cl_fft_plan *)Plan;
 
     if (plan->format != clFFT_SplitComplexFormat)
-        return CL_INVALID_VALUE;
+        {
+            return CL_INVALID_VALUE;
+        }
 
     cl_int err;
-    size_t gWorkItems, lWorkItems;
+    size_t gWorkItems;
+    size_t lWorkItems;
     int inPlaceDone;
 
     cl_int isInPlace = ((data_in_real == data_out_real) && (data_in_imag == data_out_imag)) ? 1 : 0;
 
     if ((err = allocateTemporaryBufferPlannar(plan, batchSize)) != CL_SUCCESS)
-        return err;
+        {
+            return err;
+        }
 
     cl_mem memObj_real[3];
     cl_mem memObj_imag[3];
@@ -287,7 +274,9 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
 
                     err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
-                        return err;
+                        {
+                            return err;
+                        }
 
                     currRead = (currWrite == 1) ? 1 : 2;
                     currWrite = (currWrite == 1) ? 2 : 1;
@@ -311,7 +300,9 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
 
                     err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
-                        return err;
+                        {
+                            return err;
+                        }
 
                     currRead = 1;
                     currWrite = 1;
@@ -322,6 +313,7 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
 
     return err;
 }
+
 
 cl_int
 clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
@@ -339,12 +331,16 @@ clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
     cl_device_id device_id;
     err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, nullptr);
     if (err)
-        return err;
+        {
+            return err;
+        }
 
     size_t gSize;
     err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, nullptr);
     if (err)
-        return err;
+        {
+            return err;
+        }
 
     gSize = min(128, gSize);
     size_t numGlobalThreads[1] = {max(numCols / gSize, 1) * gSize};
@@ -362,6 +358,7 @@ clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
     return err;
 }
 
+
 cl_int
 clFFT_1DTwistPlannar(clFFT_Plan Plan, cl_command_queue queue, cl_mem array_real, cl_mem array_imag,
     unsigned numRows, unsigned numCols, unsigned startRow, unsigned rowsToProcess, clFFT_Direction dir)
@@ -378,12 +375,16 @@ clFFT_1DTwistPlannar(clFFT_Plan Plan, cl_command_queue queue, cl_mem array_real,
     cl_device_id device_id;
     err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, nullptr);
     if (err)
-        return err;
+        {
+            return err;
+        }
 
     size_t gSize;
     err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, nullptr);
     if (err)
-        return err;
+        {
+            return err;
+        }
 
     gSize = min(128, gSize);
     size_t numGlobalThreads[1] = {max(numCols / gSize, 1) * gSize};

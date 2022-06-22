@@ -7,29 +7,15 @@
  *
  * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "cpu_multicorrelator_16sc.h"
@@ -102,18 +88,6 @@ bool Cpu_Multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     // call VOLK_GNSSSDR kernel
     volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, const_cast<const lv_16sc_t**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
     return true;
-}
-
-
-Cpu_Multicorrelator_16sc::Cpu_Multicorrelator_16sc()
-{
-    d_sig_in = nullptr;
-    d_local_code_in = nullptr;
-    d_shifts_chips = nullptr;
-    d_corr_out = nullptr;
-    d_local_codes_resampled = nullptr;
-    d_code_length_chips = 0;
-    d_n_correlators = 0;
 }
 
 

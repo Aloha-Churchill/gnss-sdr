@@ -4,69 +4,63 @@
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_GALILEO_UTC_MODEL_H_
-#define GNSS_SDR_GALILEO_UTC_MODEL_H_
+#ifndef GNSS_SDR_GALILEO_UTC_MODEL_H
+#define GNSS_SDR_GALILEO_UTC_MODEL_H
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
- * https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
+ * https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf
  * paragraph 5.1.7
  */
 class Galileo_Utc_Model
 {
 public:
-    // Word type 6: GST-UTC conversion parameters
-    double A0_6;
-    double A1_6;
-    int32_t Delta_tLS_6;
-    int32_t t0t_6;   //!< UTC data reference Time of Week [s]
-    int32_t WNot_6;  //!< UTC data reference Week number [week]
-    int32_t WN_LSF_6;
-    int32_t DN_6;
-    int32_t Delta_tLSF_6;
-    bool flag_utc_model;
-
-    // GPS to Galileo GST conversion parameters
-    double A_0G_10;
-    double A_1G_10;
-    int32_t t_0G_10;
-    int32_t WN_0G_10;
-
-    //double TOW_6;
-    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
     /*!
      * Default constructor
      */
-    Galileo_Utc_Model();
+    Galileo_Utc_Model() = default;
+
+    // double TOW;
+    double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
+
+    // Word type 6: GST-UTC conversion parameters
+    double A0{};
+    double A1{};
+    int32_t Delta_tLS{};
+    int32_t tot{};   //!< UTC data reference Time of Week [s]
+    int32_t WNot{};  //!< UTC data reference Week number [week]
+    int32_t WN_LSF{};
+    int32_t DN{};
+    int32_t Delta_tLSF{};
+
+    // GPS to Galileo GST conversion parameters
+    double A_0G{};
+    double A_1G{};
+    int32_t t_0G{};
+    int32_t WN_0G{};
+
+    bool flag_utc_model{};
 
     template <class Archive>
 
@@ -76,20 +70,22 @@ public:
      */
     inline void serialize(Archive& archive, const unsigned int version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
-        archive& make_nvp("A0_6", A0_6);
-        archive& make_nvp("A1_6", A1_6);
-        archive& make_nvp("Delta_tLS_6", Delta_tLS_6);
-        archive& make_nvp("t0t_6", t0t_6);
-        archive& make_nvp("WNot_6", WNot_6);
-        archive& make_nvp("WN_LSF_6", WN_LSF_6);
-        archive& make_nvp("DN_6", DN_6);
-        archive& make_nvp("Delta_tLSF_6", Delta_tLSF_6);
-        archive& make_nvp("flag_utc_model", flag_utc_model);
+        archive& BOOST_SERIALIZATION_NVP(A0);
+        archive& BOOST_SERIALIZATION_NVP(A1);
+        archive& BOOST_SERIALIZATION_NVP(Delta_tLS);
+        archive& BOOST_SERIALIZATION_NVP(tot);
+        archive& BOOST_SERIALIZATION_NVP(WNot);
+        archive& BOOST_SERIALIZATION_NVP(WN_LSF);
+        archive& BOOST_SERIALIZATION_NVP(DN);
+        archive& BOOST_SERIALIZATION_NVP(Delta_tLSF);
+        archive& BOOST_SERIALIZATION_NVP(flag_utc_model);
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_UTC_MODEL_H

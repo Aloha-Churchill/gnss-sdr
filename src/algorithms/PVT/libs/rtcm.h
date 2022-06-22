@@ -3,38 +3,25 @@
  * \brief  Interface for the RTCM 3.2 Standard
  * \author Carles Fernandez-Prades, 2015. cfernandez(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_RTCM_H_
-#define GNSS_SDR_RTCM_H_
+#ifndef GNSS_SDR_RTCM_H
+#define GNSS_SDR_RTCM_H
 
 
 #include "concurrent_queue.h"
 #include "galileo_ephemeris.h"
+#include "galileo_has_data.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
@@ -43,7 +30,8 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <pmt/pmt.h>
+#include <algorithm>  // for min
+#include <array>
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>
@@ -58,7 +46,13 @@
 #include <utility>
 #include <vector>
 
-#if BOOST_GREATER_1_65
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
+#if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
 using b_io_context = boost::asio::io_service;
@@ -97,7 +91,7 @@ using b_io_context = boost::asio::io_service;
 class Rtcm
 {
 public:
-    Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    explicit Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
     ~Rtcm();
 
     /*!
@@ -195,15 +189,15 @@ public:
     /*!
      * \brief Verifies and reads messages of type 1019 (GPS Ephemeris). Returns 1 if anything goes wrong, 0 otherwise.
      */
-    int32_t read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph);
+    int32_t read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) const;
 
     /*!
-    * \brief Prints message type 1020 (GLONASS Ephemeris).
-    * \note Code added as part of GSoC 2017 program
-    * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-    * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
-    * \return Returns message type as a string type
-    */
+     * \brief Prints message type 1020 (GLONASS Ephemeris).
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
+     * \return Returns message type as a string type
+     */
     std::string print_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model);
 
     /*!
@@ -214,7 +208,7 @@ public:
      * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
      * \return Returns 1 if anything goes wrong, 0 otherwise.
      */
-    int32_t read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model);
+    int32_t read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     /*!
      * \brief Prints message type 1029 (Unicode Text String)
@@ -229,7 +223,7 @@ public:
     /*!
      * \brief Verifies and reads messages of type 1045 (Galileo Ephemeris). Returns 1 if anything goes wrong, 0 otherwise.
      */
-    int32_t read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph);
+    int32_t read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph) const;
 
     /*!
      * \brief Prints messages of type MSM1 (Compact GNSS observables)
@@ -342,6 +336,26 @@ public:
         int32_t smooth_int,
         bool divergence_free,
         bool more_messages);
+
+    /*!
+     * \brief Prints messages of type IGM01 (SSR Orbit Correction)
+     */
+    std::vector<std::string> print_IGM01(const Galileo_HAS_data& has_data);
+
+    /*!
+     * \brief Prints messages of type IGM02 (SSR Clock Correction)
+     */
+    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data);
+
+    /*!
+     * \brief Prints messages of type IGM03 (SSR Combined Orbit and Clock Correction)
+     */
+    std::vector<std::string> print_IGM03(const Galileo_HAS_data& has_data);
+
+    /*!
+     * \brief Prints messages of type IGM05 (SSR Bias Correction)
+     */
+    std::vector<std::string> print_IGM05(const Galileo_HAS_data& has_data);
 
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
@@ -483,13 +497,22 @@ private:
     std::string get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
+    std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+
     //
     // Utilities
     //
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const;
@@ -503,23 +526,19 @@ private:
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
+    // SSR utilities
+    uint8_t ssr_update_interval(uint16_t validity_seconds) const;
 
     //
     // Classes for TCP communication
     //
     uint16_t RTCM_port;
-    //uint16_t RTCM_Station_ID;
+    // uint16_t RTCM_Station_ID;
     class Rtcm_Message
     {
     public:
-        enum
-        {
-            header_length = 6
-        };
-        enum
-        {
-            max_body_length = 1029
-        };
+        static const std::size_t header_length = 6;
+        static const std::size_t max_body_length = 1029;
 
         Rtcm_Message()
             : body_length_(0)
@@ -528,12 +547,12 @@ private:
 
         const char* data() const
         {
-            return data_;
+            return data_.data();
         }
 
         char* data()
         {
-            return data_;
+            return data_.data();
         }
 
         inline std::size_t length() const
@@ -543,12 +562,12 @@ private:
 
         const char* body() const
         {
-            return data_ + header_length;
+            return data_.data() + header_length;
         }
 
         char* body()
         {
-            return data_ + header_length;
+            return data_.data() + header_length;
         }
 
         std::size_t body_length() const
@@ -568,14 +587,14 @@ private:
         inline bool decode_header()
         {
             char header[header_length + 1] = "";
-            std::strncat(header, data_, header_length);
+            std::strncat(header, data_.data(), header_length);
             if (header[0] != 'G' || header[1] != 'S')
                 {
                     return false;
                 }
 
             char header2_[header_length - 1] = "";
-            std::strncat(header2_, data_ + 2, header_length - 2);
+            std::strncat(header2_, data_.data() + 2, header_length - 2);
             body_length_ = std::atoi(header2_);
             if (body_length_ == 0)
                 {
@@ -593,12 +612,12 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::sprintf(header, "GS%4d", static_cast<int>(body_length_));
-            std::memcpy(data_, header, header_length);
+            std::snprintf(header, header_length + 1, "GS%4d", std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0));
+            std::memcpy(data_.data(), header, header_length);
         }
 
     private:
-        char data_[header_length + max_body_length];
+        std::array<char, header_length + max_body_length> data_{};
         std::size_t body_length_;
     };
 
@@ -643,7 +662,7 @@ private:
         }
 
     private:
-        std::set<std::shared_ptr<RtcmListener> > participants_;
+        std::set<std::shared_ptr<RtcmListener>> participants_;
         enum
         {
             max_recent_msgs = 1
@@ -703,7 +722,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Closing connection with RTCM client" << std::endl;
+                            std::cout << "Closing connection with RTCM client\n";
                             room_.leave(shared_from_this());
                         }
                 });
@@ -718,14 +737,14 @@ private:
                     if (!ec)
                         {
                             room_.deliver(read_msg_);
-                            //std::cout << "Delivered message (session): ";
-                            //std::cout.write(read_msg_.body(), read_msg_.body_length());
-                            //std::cout << std::endl;
+                            // std::cout << "Delivered message (session): ";
+                            // std::cout.write(read_msg_.body(), read_msg_.body_length());
+                            // std::cout << '\n';
                             do_read_message_header();
                         }
                     else
                         {
-                            std::cout << "Closing connection with RTCM client" << std::endl;
+                            std::cout << "Closing connection with RTCM client\n";
                             room_.leave(shared_from_this());
                         }
                 });
@@ -747,7 +766,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Closing connection with RTCM client" << std::endl;
+                            std::cout << "Closing connection with RTCM client\n";
                             room_.leave(shared_from_this());
                         }
                 });
@@ -801,7 +820,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Server is down." << std::endl;
+                            std::cout << "Server is down.\n";
                         }
                 });
         }
@@ -817,7 +836,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Error in client" << std::endl;
+                            std::cout << "Error in client\n";
                             socket_.close();
                         }
                 });
@@ -853,7 +872,7 @@ private:
     class Queue_Reader
     {
     public:
-        Queue_Reader(b_io_context& io_context, std::shared_ptr<Concurrent_Queue<std::string> >& queue, int32_t port) : queue_(queue)
+        Queue_Reader(b_io_context& io_context, std::shared_ptr<Concurrent_Queue<std::string>>& queue, int32_t port) : queue_(queue)
         {
             boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
@@ -868,7 +887,7 @@ private:
                 {
                     std::string message;
                     Rtcm_Message msg;
-                    queue_->wait_and_pop(message);  //message += '\n';
+                    queue_->wait_and_pop(message);  // message += '\n';
                     if (message == "Goodbye")
                         {
                             break;
@@ -884,7 +903,7 @@ private:
 
     private:
         std::shared_ptr<Tcp_Internal_Client> c;
-        std::shared_ptr<Concurrent_Queue<std::string> >& queue_;
+        std::shared_ptr<Concurrent_Queue<std::string>>& queue_;
     };
 
 
@@ -915,25 +934,25 @@ private:
                     {
                         if (first_client)
                             {
-                                std::cout << "The TCP/IP server of RTCM messages is up and running. Accepting connections ..." << std::endl;
+                                std::cout << "The TCP/IP server of RTCM messages is up and running. Accepting connections ...\n";
                                 first_client = false;
                             }
                         else
                             {
-                                std::cout << "Starting RTCM TCP/IP server session..." << std::endl;
+                                std::cout << "Starting RTCM TCP/IP server session...\n";
                                 boost::system::error_code ec2;
                                 boost::asio::ip::tcp::endpoint endpoint = socket_.remote_endpoint(ec2);
                                 if (ec2)
                                     {
                                         // Error creating remote_endpoint
-                                        std::cout << "Error getting remote IP address, closing session." << std::endl;
+                                        std::cout << "Error getting remote IP address, closing session.\n";
                                         LOG(INFO) << "Error getting remote IP address";
                                         start_session = false;
                                     }
                                 else
                                     {
                                         std::string remote_addr = endpoint.address().to_string();
-                                        std::cout << "Serving client from " << remote_addr << std::endl;
+                                        std::cout << "Serving client from " << remote_addr << '\n';
                                         LOG(INFO) << "Serving client from " << remote_addr;
                                     }
                             }
@@ -944,7 +963,7 @@ private:
                     }
                 else
                     {
-                        std::cout << "Error when invoking a RTCM session. " << ec << std::endl;
+                        std::cout << "Error when invoking a RTCM session. " << ec << '\n';
                     }
                 start_session = true;
                 do_accept();
@@ -959,7 +978,7 @@ private:
     };
 
     b_io_context io_context;
-    std::shared_ptr<Concurrent_Queue<std::string> > rtcm_message_queue;
+    std::shared_ptr<Concurrent_Queue<std::string>> rtcm_message_queue;
     std::thread t;
     std::thread tq;
     std::list<Rtcm::Tcp_Server> servers;
@@ -1417,7 +1436,7 @@ private:
 
     // Content of message header for MSM1, MSM2, MSM3, MSM4, MSM5, MSM6 and MSM7
     std::bitset<1> DF393;
-    int32_t set_DF393(bool more_messages);  //1 indicates that more MSMs follow for given physical time and reference station ID
+    int32_t set_DF393(bool more_messages);  // 1 indicates that more MSMs follow for given physical time and reference station ID
 
     std::bitset<64> DF394;
     int32_t set_DF394(const std::map<int32_t, Gnss_Synchro>& gnss_synchro);
@@ -1480,6 +1499,83 @@ private:
 
     std::bitset<1> DF420;
     int32_t set_DF420(const Gnss_Synchro& gnss_synchro);
+
+    // IGS State Space Representation (SSR) data fields
+    // see https://files.igs.org/pub/data/format/igs_ssr_v1.pdf
+    std::bitset<3> IDF001;
+    void set_IDF001(uint8_t version);
+
+    std::bitset<8> IDF002;
+    void set_IDF002(uint8_t igs_message_number);
+
+    std::bitset<20> IDF003;
+    void set_IDF003(uint32_t tow);
+
+    std::bitset<4> IDF004;
+    void set_IDF004(uint8_t ssr_update_interval);
+
+    std::bitset<1> IDF005;
+    void set_IDF005(bool ssr_multiple_message_indicator);
+
+    std::bitset<1> IDF006;
+    void set_IDF006(bool regional_indicator);
+
+    std::bitset<4> IDF007;
+    void set_IDF007(uint8_t ssr_iod);
+
+    std::bitset<16> IDF008;
+    void set_IDF008(uint16_t ssr_provider_id);
+
+    std::bitset<4> IDF009;
+    void set_IDF009(uint8_t ssr_solution_id);
+
+    std::bitset<6> IDF010;
+    void set_IDF010(uint8_t num_satellites);
+
+    std::bitset<6> IDF011;
+    void set_IDF011(uint8_t gnss_satellite_id);
+
+    std::bitset<8> IDF012;
+    void set_IDF012(uint8_t gnss_iod);
+
+    std::bitset<22> IDF013;
+    void set_IDF013(float delta_orbit_radial_m);
+
+    std::bitset<20> IDF014;
+    void set_IDF014(float delta_orbit_in_track_m);
+
+    std::bitset<20> IDF015;
+    void set_IDF015(float delta_orbit_cross_track_m);
+
+    std::bitset<21> IDF016;
+    void set_IDF016(float dot_orbit_delta_track_m_s);
+
+    std::bitset<19> IDF017;
+    void set_IDF017(float dot_orbit_delta_in_track_m_s);
+
+    std::bitset<19> IDF018;
+    void set_IDF018(float dot_orbit_delta_cross_track_m_s);
+
+    std::bitset<22> IDF019;
+    void set_IDF019(float delta_clock_c0_m);
+
+    std::bitset<21> IDF020;
+    void set_IDF020(float delta_clock_c1_m_s);
+
+    std::bitset<27> IDF021;
+    void set_IDF021(float delta_clock_c2_m_s2);
+
+    std::bitset<5> IDF023;
+    void set_IDF023(uint8_t num_bias_processed);
+
+    std::bitset<5> IDF024;
+    void set_IDF024(uint8_t gnss_signal_tracking_mode_id);
+
+    std::bitset<14> IDF025;
+    void set_IDF025(float code_bias_m);
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTCM_H

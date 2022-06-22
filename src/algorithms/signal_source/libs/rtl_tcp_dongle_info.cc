@@ -5,35 +5,21 @@
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
  * This file contains information taken from librtlsdr:
- *  http://git.osmocom.org/rtl-sdr/
- * -------------------------------------------------------------------------
+ *  https://git.osmocom.org/rtl-sdr
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "rtl_tcp_dongle_info.h"
-#include <boost/foreach.hpp>
 #include <string>
+#include <vector>
 
 using boost::asio::ip::tcp;
 
@@ -47,11 +33,11 @@ boost::system::error_code Rtl_Tcp_Dongle_Info::read(boost::asio::ip::tcp::socket
 {
     boost::system::error_code ec;
 
-    unsigned char data[sizeof(char) * 4 + sizeof(uint32_t) * 2];
-    socket.receive(boost::asio::buffer(data), 0, ec);
-    if (!ec)
+    std::vector<unsigned char> data(sizeof(char) * 4 + sizeof(uint32_t) * 2);
+    size_t received_bits = socket.receive(boost::asio::buffer(data), 0, ec);
+    if (!ec && (received_bits > 0))
         {
-            std::memcpy(magic_, data, 4);
+            std::memcpy(magic_, data.data(), 4);
 
             uint32_t type;
             std::memcpy(&type, &data[4], 4);
@@ -59,7 +45,7 @@ boost::system::error_code Rtl_Tcp_Dongle_Info::read(boost::asio::ip::tcp::socket
             tuner_type_ = boost::asio::detail::socket_ops::network_to_host_long(type);
 
             uint32_t count;
-            std ::memcpy(&count, &data[8], 4);
+            std::memcpy(&count, &data[8], 4);
 
             tuner_gain_count_ = boost::asio::detail::socket_ops::network_to_host_long(count);
         }
@@ -128,7 +114,7 @@ double Rtl_Tcp_Dongle_Info::clip_gain(int gain) const
         }
 
     double last_stop = gains.front();
-    BOOST_FOREACH (double g, gains)
+    for (auto g : gains)
         {
             g /= 10.0;
 

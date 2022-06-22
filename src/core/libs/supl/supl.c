@@ -1,17 +1,24 @@
-/*
-** SUPL library with some RRLP
-**
-** Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
-** All rights reserved.
-** Redistribution and modifications are permitted subject to BSD license.
-** Modifified by Carles Fernandez <carles d-o-t fernandez a-t cttc d-o-t es>
-** to make use of the gnutls library.
-*/
+/*!
+ * \file supl.c
+ * \brief SUPL library with some RRLP
+ * \author Carles Fernandez, 2017 cfernandez(at)cttc.es
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
+ * SPDX-License-Identifier: BSD-1-Clause
+ *
+ * -----------------------------------------------------------------------------
+ */
 
 #include "supl.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -76,7 +83,7 @@ int EXPORT supl_ulp_encode(supl_ulp_t *pdu)
             memset(pdu->buffer, 0, sizeof(pdu->buffer));
 
             pdu_len = (ret.encoded + 7) >> 3;
-            ((ULP_PDU_t *)pdu->pdu)->length = pdu_len;
+            (pdu->pdu)->length = pdu_len;
 
             ret = uper_encode_to_buffer(&asn_DEF_ULP_PDU, pdu->pdu, pdu->buffer, sizeof(pdu->buffer));
             if (ret.encoded > 0)
@@ -133,8 +140,8 @@ int EXPORT supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu)
 
 int EXPORT supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu)
 {
-    int err;
-    int n;
+    int64_t err;
+    int64_t n;
     asn_dec_rval_t rval;
     ULP_PDU_t *length;
 
@@ -306,7 +313,8 @@ void EXPORT supl_close(supl_ctx_t *ctx)
 static int server_connect(char *server)
 {
     int fd = -1;
-    struct addrinfo *ailist, *aip;
+    struct addrinfo *ailist;
+    struct addrinfo *aip;
     struct addrinfo hint;
     int err;
 
@@ -333,10 +341,7 @@ static int server_connect(char *server)
                         }
                     return -1;
                 }
-            else
-                {
-                    break;
-                }
+            break;
         }
     freeaddrinfo(aip);
     return fd;
@@ -468,17 +473,17 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu)
     (void)asn_long2INTEGER(&ulp->message.choice.msSUPLPOSINIT.sETCapabilities.prefMethod, PrefMethod_agpsSETBasedPreferred);
     ulp->message.choice.msSUPLPOSINIT.sETCapabilities.posProtocol.rrlp = 1;
 
-    //GNSS-SDR mod
-    // Use ctx->p.request to switch between a pre-defined set of assistance data request
-    // reason: Some SUPL servers do not respond to Acquisition assistance depending on the status of other assistance flags
+    // GNSS-SDR mod
+    //  Use ctx->p.request to switch between a pre-defined set of assistance data request
+    //  reason: Some SUPL servers do not respond to Acquisition assistance depending on the status of other assistance flags
 
     switch (ctx->p.request)
         {
-        case 0:                                             //request almanac, time, and cell positions
+        case 0:                                             // request almanac, time, and cell positions
             req_adata->acquisitionAssistanceRequested = 0;  // 1
             req_adata->navigationModelRequested = 0;        // 1
             req_adata->referenceTimeRequested = 1;
-            req_adata->utcModelRequested = 1;          //1
+            req_adata->utcModelRequested = 1;          // 1
             req_adata->ionosphericModelRequested = 1;  // 1
             req_adata->referenceLocationRequested = 1;
             req_adata->almanacRequested = 1;
@@ -488,17 +493,17 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu)
             req_adata->acquisitionAssistanceRequested = 0;  // 1
             req_adata->navigationModelRequested = 1;        // 1
             req_adata->referenceTimeRequested = 1;
-            req_adata->utcModelRequested = 0;          //1
+            req_adata->utcModelRequested = 0;          // 1
             req_adata->ionosphericModelRequested = 0;  // 1
             req_adata->referenceLocationRequested = 0;
             req_adata->almanacRequested = 0;
             req_adata->realTimeIntegrityRequested = 0;  // 1
             break;
-        case 2:                                             //request Acquisition assistance (Doppler assistance)
+        case 2:                                             // request Acquisition assistance (Doppler assistance)
             req_adata->acquisitionAssistanceRequested = 1;  // 1
             req_adata->navigationModelRequested = 0;        // 1
             req_adata->referenceTimeRequested = 1;
-            req_adata->utcModelRequested = 1;          //1
+            req_adata->utcModelRequested = 1;          // 1
             req_adata->ionosphericModelRequested = 1;  // 1
             req_adata->referenceLocationRequested = 1;
             req_adata->almanacRequested = 1;
@@ -508,7 +513,7 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu)
             req_adata->acquisitionAssistanceRequested = 0;  // 1
             req_adata->navigationModelRequested = 0;        // 1
             req_adata->referenceTimeRequested = 1;
-            req_adata->utcModelRequested = 1;          //1
+            req_adata->utcModelRequested = 1;          // 1
             req_adata->ionosphericModelRequested = 1;  // 1
             req_adata->referenceLocationRequested = 1;
             req_adata->almanacRequested = 1;
@@ -680,7 +685,8 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
             loc = &hdr->refLocation->threeDLocation;
             if (loc->size == 14 && loc->buf[0] == 0x90)
                 {
-                    double lat, lon;
+                    double lat;
+                    double lon;
                     long l;
 
                     /* from 3GPP TS 23.032 V4.0.0 (2001-04) */
@@ -800,20 +806,20 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
                     if (ue)
                         {
 #if 0
-	assist->eph_x[i].L2P = ue->ephemL2Pflag;
-	assist->eph_x[i].fit = ue->ephemFitFlag;
+    assist->eph_x[i].L2P = ue->ephemL2Pflag;
+    assist->eph_x[i].fit = ue->ephemFitFlag;
 #endif
                             assist->eph[i].delta_n = ue->ephemDeltaN;
                             assist->eph[i].M0 = ue->ephemM0;
 #if 0
-	// this is needed for asn1c version 0.9.22
-	{
-	  long v;
-	  asn_INTEGER2long((INTEGER_t *)&ue->ephemE, &v);
-	  assist->eph[i].e = v;
-	  asn_INTEGER2long((INTEGER_t *)&ue->ephemAPowerHalf, &v);
-	  assist->eph[i].e = v;
-	}
+    // this is needed for asn1c version 0.9.22
+    {
+      long v;
+      asn_INTEGER2long((INTEGER_t *)&ue->ephemE, &v);
+      assist->eph[i].e = v;
+      asn_INTEGER2long((INTEGER_t *)&ue->ephemAPowerHalf, &v);
+      assist->eph[i].e = v;
+    }
 #else
                             assist->eph[i].e = ue->ephemE;
                             assist->eph[i].A_sqrt = ue->ephemAPowerHalf;
@@ -852,7 +858,7 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
             assist->iono.a0 = hdr->ionosphericModel->alfa0;
             assist->iono.a1 = hdr->ionosphericModel->alfa1;
             assist->iono.a2 = hdr->ionosphericModel->alfa2;
-            assist->iono.a3 = hdr->ionosphericModel->alfa3;  //missed in original supl client
+            assist->iono.a3 = hdr->ionosphericModel->alfa3;  // missed in original supl client
             assist->iono.b0 = hdr->ionosphericModel->beta0;
             assist->iono.b1 = hdr->ionosphericModel->beta1;
             assist->iono.b2 = hdr->ionosphericModel->beta2;
@@ -901,7 +907,7 @@ int EXPORT supl_ctx_free(supl_ctx_t *ctx)
 
 static int supl_more_rrlp(PDU_t *rrlp)
 {
-    long value;
+    int64_t value;
 
     return (rrlp->component.present == RRLP_Component_PR_assistanceData &&
             rrlp->component.choice.assistanceData.moreAssDataToBeSent &&
@@ -918,8 +924,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
     memcpy(ctx->p.msisdn, "\xFF\xFF\x91\x94\x48\x45\x83\x98", 8);
 
     /*
-  ** connect to server
-  */
+     ** connect to server
+     */
 
     if (supl_server_connect(ctx, server) < 0)
         {
@@ -927,8 +933,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
         }
 
     /*
-  ** send SUPL_START
-  */
+     ** send SUPL_START
+     */
 
     if (pdu_make_ulp_start(ctx, &ulp) < 0)
         {
@@ -939,8 +945,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
     supl_ulp_free(&ulp);
 
     /*
-  ** should receive SUPL_RESPONSE back
-  */
+     ** should receive SUPL_RESPONSE back
+     */
 
     if (supl_ulp_recv(ctx, &ulp) < 0)
         {
@@ -959,8 +965,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
     supl_ulp_free(&ulp);
 
     /*
-  ** send SUPL_POS_INIT
-  */
+     ** send SUPL_POS_INIT
+     */
 
     if (pdu_make_ulp_pos_init(ctx, &ulp) < 0)
         {
@@ -970,8 +976,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
     (void)supl_ulp_send(ctx, &ulp);
 
     /*
-  ** should get SUPLPOS back - bounce back and forth until all messages have arrived
-  */
+     ** should get SUPLPOS back - bounce back and forth until all messages have arrived
+     */
 
     memset(assist, 0, sizeof(supl_assist_t));
 
@@ -1041,8 +1047,8 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
     supl_ulp_free(&ulp);
 
     /*
-  ** send SUPL_END (but who really cares)
-  */
+     ** send SUPL_END (but who really cares)
+     */
 
     supl_close(ctx);
 
