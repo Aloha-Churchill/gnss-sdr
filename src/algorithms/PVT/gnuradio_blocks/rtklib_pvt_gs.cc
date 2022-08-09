@@ -1014,15 +1014,15 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
 
 
                     // save BeiDou CNAV2 ephemeris to XML file
-                    file_name = xml_base_path + "bds_cnav2_ephemeris.xml";
-                    if (d_pvt_solver->beidou_cnav2_ephemeris_map.empty() == false)
+                    file_name = d_xml_base_path + "bds_cnav2_ephemeris.xml";
+                    if (d_user_pvt_solver->beidou_cnav2_ephemeris_map.empty() == false)
                         {
                             std::ofstream ofs;
                             try
                                 {
                                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                                     boost::archive::xml_oarchive xml(ofs);
-                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_cnav2_ephemeris_map);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_user_pvt_solver->beidou_cnav2_ephemeris_map);
                                     LOG(INFO) << "Saved BeiDou CNAV2 Ephemeris map data";
                                 }
                             catch (const boost::archive::archive_exception& e)
@@ -1044,15 +1044,15 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                         }
 
                     // Save BeiDou CNAV2 iono parameters
-                    file_name = xml_base_path + "bds_cnav2_iono.xml";
-                    if (d_pvt_solver->beidou_cnav2_iono.valid)
+                    file_name = d_xml_base_path + "bds_cnav2_iono.xml";
+                    if (d_user_pvt_solver->beidou_cnav2_iono.valid)
                         {
                             std::ofstream ofs;
                             try
                                 {
                                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                                     boost::archive::xml_oarchive xml(ofs);
-                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_cnav2_iono);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_user_pvt_solver->beidou_cnav2_iono);
                                     LOG(INFO) << "Saved BeiDou CNAV2 ionospheric model parameters";
                                 }
                             catch (const boost::archive::archive_exception& e)
@@ -1638,22 +1638,22 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // ### Beidou EPHEMERIS ###
                     const auto bds_cnav2_eph = wht::any_cast<std::shared_ptr<Beidou_Cnav2_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                               << bds_cnav2_eph->PRN << " (Block "
-                               << bds_cnav2_eph->satelliteBlock[bds_cnav2_eph->PRN] << "("
-                               << " inserted with Toe=" << bds_cnav2_eph->toe << " and BDS Week="
-                               << bds_cnav2_eph->WN;
+                               << bds_cnav2_eph->i_satellite_PRN << " (Block "
+                               << bds_cnav2_eph->satelliteBlock[bds_cnav2_eph->i_satellite_PRN] << "("
+                               << " inserted with Toe=" << bds_cnav2_eph->t_oe << " and BDS Week="
+                               << bds_cnav2_eph->i_BDS_week;
 
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
-                            if (d_internal_pvt_solver->beidou_cnav2_ephemeris_map.find(bds_cnav2_eph->PRN) == d_internal_pvt_solver->beidou_cnav2_ephemeris_map.cend())
+                            if (d_internal_pvt_solver->beidou_cnav2_ephemeris_map.find(bds_cnav2_eph->i_satellite_PRN) == d_internal_pvt_solver->beidou_cnav2_ephemeris_map.cend())
                                 {
                                     new_annotation = true;
                                 }
                             else
                                 {
-                                    if (d_internal_pvt_solver->beidou_cnav2_ephemeris_map[bds_cnav2_eph->PRN].toc != bds_cnav2_eph->toc)
+                                    if (d_internal_pvt_solver->beidou_cnav2_ephemeris_map[bds_cnav2_eph->i_satellite_PRN].t_oc != bds_cnav2_eph->t_oc)
                                         {
                                             new_annotation = true;
                                         }
@@ -1662,18 +1662,18 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                 {
                                     // New record!
                                     std::map<int32_t, Beidou_Cnav2_Ephemeris> new_bds_cnav2_eph;
-                                    new_bds_cnav2_eph[bds_cnav2_eph->PRN] = *bds_cnav2_eph;
-                                    d_rp->log_rinex_nav_bds_dnav(d_type_of_rx, new_bds_cnav2_eph);
+                                    new_bds_cnav2_eph[bds_cnav2_eph->i_satellite_PRN] = *bds_cnav2_eph;
+                                    d_rp->log_rinex_nav_bds_cnav2(d_type_of_rx, new_bds_cnav2_eph);
                                 }
                         }
-                    d_internal_pvt_solver->beidou_cnav2_ephemeris_map[bds_cnav2_eph->PRN] = *bds_cnav2_eph;
+                    d_internal_pvt_solver->beidou_cnav2_ephemeris_map[bds_cnav2_eph->i_satellite_PRN] = *bds_cnav2_eph;
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->beidou_cnav_ephemeris_map[bds_cnav2_eph->PRN] = *bds_cnav2_eph;
+                            d_user_pvt_solver->beidou_cnav2_ephemeris_map[bds_cnav2_eph->i_satellite_PRN] = *bds_cnav2_eph;
                         }
-                    if (bds_cnav2_eph->SV_health != 0)
+                    if (bds_cnav2_eph->HS != 0)
                         {
-                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("Beidou"), bds_cnav2_eph->PRN)
+                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("Beidou"), bds_cnav2_eph->i_satellite_PRN)
                                       << " is not healthy, not used for navigation" << TEXT_RESET << '\n';
                         }
                 }
@@ -1704,10 +1704,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     // ### BeiDou ALMANAC ###
                     const auto bds_cnav2_almanac = wht::any_cast<std::shared_ptr<Beidou_Cnav2_Almanac>>(pmt::any_ref(msg));
-                    d_internal_pvt_solver->beidou_cnav2_almanac_map[bds_cnav2_almanac->PRN] = *bds_cnav2_almanac;
+                    d_internal_pvt_solver->beidou_cnav2_almanac_map[bds_cnav2_almanac->i_satellite_PRN] = *bds_cnav2_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->beidou_cnav2_almanac_map[bds_cnav2_almanac->PRN] = *bds_cnav2_almanac;
+                            d_user_pvt_solver->beidou_cnav2_almanac_map[bds_cnav2_almanac->i_satellite_PRN] = *bds_cnav2_almanac;
                         }
                     DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
                 }
@@ -2227,7 +2227,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // LOOKAT: Make sure this is correct, not sure! 
                             if (tmp_eph_iter_bds_cnav2 != d_internal_pvt_solver->beidou_cnav2_ephemeris_map.cend())
                                 {
-                                    const uint32_t prn_aux = tmp_eph_iter_bds_cnav2->second.PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_bds_cnav2->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal) == std::string("B1")) || (std::string(in[i][epoch].Signal) == std::string("B3"))) && (tmp_eph_iter_bds_dnav->second.SV_health == 0)))
                                         {
                                             store_valid_observable = true;

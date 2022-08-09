@@ -51,39 +51,39 @@ BeidouB2aDllPllTracking::BeidouB2aDllPllTracking(
     DLOG(INFO) << "role " << role;
 
     
-    trk_params.SetFromConfiguration(configuration, role);
+    trk_param.SetFromConfiguration(configuration, role);
     
-    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (BEIDOU_B2A_CODE_RATE_CPS / BEIDOU_B2A_CODE_LENGTH_CHIPS)));
-    trk_params.vector_length = vector_length;
-    if (trk_params.extend_correlation_symbols < 1)
+    const auto vector_length = static_cast<int>(std::round(trk_param.fs_in / (BEIDOU_B2ap_CODE_RATE_HZ / BEIDOU_B2ap_CODE_LENGTH_CHIPS)));
+    trk_param.vector_length = vector_length;
+    if (trk_param.extend_correlation_symbols < 1)
         {
-            trk_params.extend_correlation_symbols = 1;
+            trk_param.extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: BeiDou B2a. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
         }
-    else if (!trk_params.track_pilot and trk_params.extend_correlation_symbols > BEIDOU_B2ad_SECONDARY_CODE_LENGTH)
+    else if (!trk_param.track_pilot and trk_param.extend_correlation_symbols > BEIDOU_B2ad_SECONDARY_CODE_LENGTH)
         {
-            trk_params.extend_correlation_symbols = BEIDOU_B2ad_SECONDARY_CODE_LENGTH;
+            trk_param.extend_correlation_symbols = BEIDOU_B2ad_SECONDARY_CODE_LENGTH;
             std::cout << TEXT_RED << "WARNING: BeiDou B2a. extend_correlation_symbols must be lower than 5 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << std::endl;
         }
-    if ((trk_params.extend_correlation_symbols > 1) and (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
+    if ((trk_param.extend_correlation_symbols > 1) and (trk_param.pll_bw_narrow_hz > trk_param.pll_bw_hz or trk_param.dll_bw_narrow_hz > trk_param.dll_bw_hz))
         {
             std::cout << TEXT_RED << "WARNING: BeiDou B2a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
 
-    trk_params.system = 'C';
+    trk_param.system = 'C';
     const std::array<char, 3> sig_{'5', 'C', '\0'};
-    std::memcpy(trk_params.signal, sig_.data(), 3);
+    std::memcpy(trk_param.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################
-    if (trk_params.item_type == "gr_complex")
+    if (trk_param.item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = dll_pll_veml_make_tracking(trk_params);
+            tracking_ = dll_pll_veml_make_tracking(trk_param);
         }
     else
         {
             item_size_ = 0;
-            LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
+            LOG(WARNING) << trk_param.item_type << " unknown tracking item type.";
         }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";

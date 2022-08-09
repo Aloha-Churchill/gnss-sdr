@@ -1450,6 +1450,20 @@ void Rinex_Printer::log_rinex_nav_bds_dnav(int type_of_rx, const std::map<int32_
         }
 }
 
+// adding for cnav2 TODO
+void Rinex_Printer::log_rinex_nav_bds_cnav2(int type_of_rx, const std::map<int32_t, Beidou_Cnav2_Ephemeris>& new_bds_eph)
+{
+    switch (type_of_rx)
+        {
+        // case 500:  // BDS B1I only
+        // case 600:  // BDS B3I only
+        //     log_rinex_nav(navFile, new_bds_eph);
+        //     break;
+        default:
+            break;
+        }
+}
+
 
 void Rinex_Printer::lengthCheck(const std::string& line) const
 {

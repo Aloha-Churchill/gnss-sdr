@@ -178,6 +178,7 @@ private:
     unsigned int channel_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
+    unsigned int doppler_center_;
     unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;

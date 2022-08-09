@@ -56,6 +56,7 @@
 
 
 class Beidou_Dnav_Ephemeris;
+class Beidou_Cnav2_Ephemeris;
 class Beidou_Dnav_Iono;
 class Beidou_Dnav_Utc_Model;
 class Galileo_Ephemeris;
@@ -199,6 +200,12 @@ public:
      */
     void log_rinex_nav_bds_dnav(int type_of_rx,
         const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
+
+    /*!
+     * \brief Print RINEX annotation for BeiDou CNAV message
+     */
+    void log_rinex_nav_bds_cnav2(int type_of_rx,
+        const std::map<int32_t, Beidou_Cnav2_Ephemeris>& new_bds_eph);
 
     /*!
      * \brief Set processing for signals older than 2009

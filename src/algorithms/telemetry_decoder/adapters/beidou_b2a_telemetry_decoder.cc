@@ -47,9 +47,8 @@ BeidouB2aTelemetryDecoder::BeidouB2aTelemetryDecoder(
     DLOG(INFO) << "role " << role;
     tlm_parameters_.SetFromConfiguration(configuration, role);
     // make telemetry decoder object
-    telemetry_decoder_ = beidou_b2a_make_telemetry_decoder_gs(satellite_, dump_);
+    telemetry_decoder_ = beidou_b2a_make_telemetry_decoder_gs(satellite_, tlm_parameters_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    channel_ = 0;
 
     if (in_streams_ > 1)
         {

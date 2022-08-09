@@ -600,9 +600,10 @@ void beidou_b2ap_secondary_gen_string(std::string& _dest, uint32_t _prn)
 }
 
 /*
- *  Generates complex BEIDOU B2a data+pilot code for the desired SV ID and sampled to specific sampling frequency
- */
-void beidou_b2a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
+
+ Generates complex BEIDOU B2a data+pilot code for the desired SV ID and sampled to specific sampling frequency
+
+void beidou_b2ad_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     uint32_t _code_length_data = BEIDOU_B2ad_CODE_LENGTH_CHIPS;
     uint32_t _code_length_pilot = BEIDOU_B2ap_CODE_LENGTH_CHIPS;
@@ -647,3 +648,5 @@ void beidou_b2a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
                 }
         }
 }
+
+*/

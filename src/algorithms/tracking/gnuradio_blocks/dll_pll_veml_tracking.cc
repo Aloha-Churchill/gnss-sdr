@@ -430,7 +430,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                 }
-            else if (signal_type == "5C")
+            else if (d_signal_type == "5C")
                 {
                     d_signal_carrier_freq = BEIDOU_B2a_FREQ_HZ;
                     d_code_period = BEIDOU_B2ad_CODE_PERIOD;
@@ -441,19 +441,19 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B2ad_CODE_LENGTH_CHIPS);
                     d_secondary = true;
 
-                    if (trk_parameters.track_pilot)
+                    if (d_trk_parameters.track_pilot)
                         {
                             d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ap_SECONDARY_CODE_LENGTH);
-                            signal_pretty_name = signal_pretty_name + "Pilot";
+                            d_signal_pretty_name = d_signal_pretty_name + "Pilot";
 
                             d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
-                            d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ad_SECONDARY_CODE);
+                            d_data_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
                         }
                     else
                         {
                             d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ad_SECONDARY_CODE);
-                            signal_pretty_name = signal_pretty_name + "Data";
+                            d_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
+                            d_signal_pretty_name = d_signal_pretty_name + "Data";
                         }
                 }
             else
@@ -847,24 +847,27 @@ void dll_pll_veml_tracking::start_tracking()
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
                 }
         }
-        
-    else if (systemName == "Beidou" and signal_type == "5C")
+
+    /* 
+    else if (d_systemName == "Beidou" and d_signal_type == "5C")
         {
-            if (trk_parameters.track_pilot)
+            if (d_trk_parameters.track_pilot)
                 {
                     // Secondary pilot code is specific for each satellite
-                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ap_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                    d_secondary_code_string = BEIDOU_B2ap_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1];
                     beidou_b2ap_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
                     beidou_b2ad_code_gen_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    // make_b2ad_secondary(gsl::span<int32_t>(_code, _code_length), _prn);
+                    // ASK ABOUT THIS: CHECK
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
                 }
             else
                 {
                     beidou_b2ad_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
                 }
         }
-
+    */
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 

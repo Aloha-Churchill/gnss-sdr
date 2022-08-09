@@ -105,6 +105,7 @@ private:
 
     // Navigation Message variable
     Beidou_Cnav2_Navigation_Message d_nav;
+    std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 
     // Values to populate gnss synchronization structure
     uint32_t d_symbol_duration_ms;
@@ -114,6 +115,12 @@ private:
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
     bool Flag_valid_word;
+
+    bool d_flag_SOW_set;
+    bool d_dump_mat;
+    bool d_remove_dat;
+    bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
 
     // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;

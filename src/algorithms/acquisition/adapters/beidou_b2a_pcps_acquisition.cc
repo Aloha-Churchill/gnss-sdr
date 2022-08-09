@@ -65,7 +65,7 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
                                 out_streams_(out_streams)
 {
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2A_CODE_CHIP_RATE_CPS, BEDOU_B2A_OPT_ACQ_FS_SPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2ad_CODE_RATE_HZ, BEDOU_B2A_OPT_ACQ_FS_SPS); // check if these are correct values!
 
     DLOG(INFO) << "role " << role;
 
@@ -81,7 +81,7 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
     item_size_ = acq_parameters_.it_size;
 
     num_codes_ = acq_parameters_.sampled_ms;
-    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (BEIDOU_B2A_CODE_RATE_CPS / BEIDOU_B2A_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (BEIDOU_B2ad_CODE_RATE_HZ / BEIDOU_B2ap_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
@@ -114,7 +114,7 @@ void BeidouB2aPcpsAcquisition::stop_acquisition()
 
 void BeidouB2aPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + ".pfa", 0.0);
+    float pfa = acq_parameters_.pfa;
 
     if (pfa == 0.0)
         {
@@ -164,6 +164,9 @@ signed int BeidouB2aPcpsAcquisition::mag()
 void BeidouB2aPcpsAcquisition::init()
 {
     acquisition_->init();
+
+    //added in
+    //set_local_code();
 }
 
 
@@ -171,7 +174,7 @@ void BeidouB2aPcpsAcquisition::set_local_code()
 {
     volk_gnsssdr::vector<std::complex<float>> code(code_length_);
 
-    beidou_b2a_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+    // beidou_b2ad_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
 
     own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)

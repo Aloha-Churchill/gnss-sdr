@@ -120,6 +120,9 @@ public:
 	double a_1;			//Satellite clock time drift correction coefficient [s/s]
 	double a_2;			//Satellite clock time drift rate correction coefficient [s/s^2]
 
+	//added in 
+	std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
+
     template <class Archive>
 
     /*!
@@ -134,7 +137,7 @@ public:
     	// Others values
     	archive& make_nvp("i_satellite_PRN", i_satellite_PRN);
     	archive& make_nvp("SOW", SOW);
-    	archive& make_nvp("WN", i_BDS_week);
+    	archive& make_nvp("i_BDS_week", i_BDS_week);
 
     	// Satellite Heath Status
     	archive& make_nvp("HS", HS);	//0:Satellite is healthy/provides services, 1:Satellite is unhealthy or in test/does not provide services, 2:reserved/reserved, 3:reserved/reserved
