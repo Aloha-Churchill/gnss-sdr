@@ -240,7 +240,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     DLOG(INFO) << "role: " << role_conditioner << " (ID=" << ID << ")";
 
     const std::string signal_conditioner = configuration->property(role_conditioner + impl_prop, ""s);
-
     const std::string data_type_adapter = configuration->property(role_datatypeadapter + impl_prop, ""s);
     const std::string input_filter = configuration->property(role_inputfilter + impl_prop, ""s);
     const std::string resampler = configuration->property(role_resampler + impl_prop, ""s);
@@ -1366,6 +1365,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     std::unique_ptr<AcquisitionInterface> block;
     const std::string implementation = configuration->property(role + impl_prop, "Wrong"s);
 
+
     // ACQUISITION BLOCKS ------------------------------------------------------
     if (implementation == "GPS_L1_CA_PCPS_Acquisition")
         {
@@ -1485,6 +1485,13 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation == "BEIDOU_B3I_PCPS_Acquisition")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<BeidouB3iPcpsAcquisition>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+        // added in for B2a 
+    else if (implementation == "BEIDOU_B2a_PCPS_Acquisition")
+        {
+            std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<BeidouB2aPcpsAcquisition>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
@@ -1656,6 +1663,13 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
+        // added in for B2a
+    else if (implementation == "BEIDOU_B2a_DLL_PLL_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_ = std::make_unique<BeidouB2aDllPllTracking>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
         {
@@ -1784,6 +1798,13 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     else if (implementation == "BEIDOU_B3I_Telemetry_Decoder")
         {
             std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<BeidouB3iTelemetryDecoder>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+    // added in for Beidou B2a
+    else if (implementation == "BEIDOU_B2a_Telemetry_Decoder")
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<BeidouB2aTelemetryDecoder>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
