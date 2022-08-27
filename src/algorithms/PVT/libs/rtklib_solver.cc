@@ -33,7 +33,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
-#include "Beidou_B2a.h" // possibly replace with Beidou_CNAV2.h?
+#include "Beidou_B2a.h"
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
@@ -75,7 +75,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
     // adding in for B2a
-    d_rtklib_band_index["5C"] = 2;
+    // d_rtklib_band_index["5C"] = 2;
 
     switch (d_type_of_rx)
         {
@@ -130,9 +130,6 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             break;
-        
-        // need to add in cases for 700-707 if needed for B2a signal
-        // how do I find this type of information
 
         }
 

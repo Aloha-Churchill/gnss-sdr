@@ -1490,6 +1490,16 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
+
+    if (configuration_->property("Channels_5C.count", uint64_t(0ULL)) > available_BDS_5C_signals_.size() - 1)
+        {
+            help_hint_ += " * The number of BeiDou B2a channels is set to Channels_5C.count=" + std::to_string(configuration_->property("Channels_5C.count", 0));
+            help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_5C_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_5C.count=" + std::to_string(available_BDS_5C_signals_.size() - 1) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+
     if (configuration_->property("Channels_B3.count", uint64_t(0ULL)) > available_BDS_B3_signals_.size() - 1)
         {
             help_hint_ += " * The number of BeiDou B3 channels is set to Channels_B3.count=" + std::to_string(configuration_->property("Channels_B3.count", 0));

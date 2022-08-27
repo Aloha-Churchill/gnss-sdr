@@ -68,7 +68,7 @@ constexpr double BEIDOU_B2ad_CODE_RATE_HZ = 10.23e6;      //!< BEIDOU_B2a data c
 constexpr int32_t BEIDOU_B2ad_CODE_LENGTH_CHIPS = 10230;  //!< BEIDOU_B2a data  code length [chips]
 constexpr int32_t BEIDOU_B2ad_SECONDARY_CODE_LENGTH = 5;  //!< Each bit is 1 ms (one primary code sequence)
 constexpr char BEIDOU_B2ad_SECONDARY_CODE[6] = "00010";
-constexpr double BEDOU_B2A_OPT_ACQ_FS_SPS = 1176.45e6; // CHECK THIS VALUE, center frequency;
+constexpr double BEIDOU_B2A_OPT_ACQ_FS_SPS = 1176.45e6; // check_b2a (what is OPT frequency?) CHECK THIS VALUE, center frequency;
 
 constexpr double BEIDOU_B2ap_CODE_RATE_HZ = 10.23e6;                       //!< BEIDOU_B2a pilot code rate [chips/s]
 constexpr int32_t BEIDOU_B2ap_CODE_LENGTH_CHIPS = 10230;                   //!< BEIDOU_B2a pilot code length [chips]

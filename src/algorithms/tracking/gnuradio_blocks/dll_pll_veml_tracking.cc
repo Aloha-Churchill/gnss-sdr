@@ -848,26 +848,24 @@ void dll_pll_veml_tracking::start_tracking()
                 }
         }
 
-    /* 
+    
     else if (d_systemName == "Beidou" and d_signal_type == "5C")
         {
             if (d_trk_parameters.track_pilot)
                 {
                     // Secondary pilot code is specific for each satellite
                     d_secondary_code_string = BEIDOU_B2ap_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1];
-                    beidou_b2ap_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
-                    beidou_b2ad_code_gen_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
-                    // make_b2ad_secondary(gsl::span<int32_t>(_code, _code_length), _prn);
-                    // ASK ABOUT THIS: CHECK
+                    beidou_b2ap_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                    beidou_b2ad_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
-                    beidou_b2ad_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    beidou_b2ad_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    */
+    
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 

@@ -56,6 +56,13 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
+        void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    void set_satellite(const Gnss_Satellite& satellite) override;
+    
     inline std::string role() override
     {
         return role_;
@@ -67,12 +74,7 @@ public:
         return "BEIDOU_B2a_Telemetry_Decoder";
     }
 
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
 
-    void set_satellite(const Gnss_Satellite& satellite) override;
     inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
     inline void reset() override
     {

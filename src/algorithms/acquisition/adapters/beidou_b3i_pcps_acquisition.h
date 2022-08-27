@@ -11,7 +11,7 @@
  *
  * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
- *
+ * check_b2a may need to modify variables for gr_complex
  * -----------------------------------------------------------------------------
  */
 

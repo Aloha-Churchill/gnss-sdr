@@ -331,7 +331,7 @@ void signal_generator_c::generate_codes()
             else if (system_[sat] == "C")
                 {
                     // Generate one code-period of BEIDOU B2a signal
-                    // beidou_b2ad_code_gen_complex_sampled(code, PRN_[sat], fs_in_);  //BEIDOU does not have a chip shift.
+                    beidou_b2ad_code_gen_complex_sampled(code, PRN_[sat], fs_in_);  //BEIDOU does not have a chip shift.
                     //static_cast<int>(BEIDOU_B2ad_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
 
                     // Obtain the desired CN0 assuming that Pn = 1.

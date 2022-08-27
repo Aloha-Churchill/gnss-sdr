@@ -21,6 +21,7 @@
 #include "kf_vtl_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
+#include "Beidou_B2a.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -30,6 +31,7 @@
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
+#include "beidou_b2a_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
 #include "galileo_e6_signal_replica.h"
@@ -177,6 +179,7 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["B3"] = "B3I";
+    map_signal_pretty_name["5C"] = "B2a";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
 
@@ -417,6 +420,26 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
                     d_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
+                }
+            else if (d_signal_type == "5C")
+                {
+                    // GEO Satellites use different secondary code
+                    d_signal_carrier_freq = BEIDOU_B2a_FREQ_HZ;
+                    d_code_period = BEIDOU_B2ad_CODE_PERIOD_MS/1000.0;
+                    d_code_chip_rate = BEIDOU_B2ad_CODE_RATE_HZ;
+                    d_code_length_chips = static_cast<int32_t>(BEIDOU_B2ad_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_CNAV2_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
+                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                    d_data_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
                 }
             else
                 {
@@ -790,6 +813,39 @@ void kf_vtl_tracking::start_tracking()
                     d_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
+                    d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                }
+        }
+
+else if (d_systemName == "Beidou" and d_signal_type == "5C")
+        {
+            beidou_b2ad_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            // Update secondary code settings for geo satellites
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+                {
+                    d_symbols_per_bit = BEIDOU_CNAV2_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    // set the preamble in the secondary code acquisition
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_CNAV2_PREAMBLE_LENGTH_SYMBOLS);
+                    d_secondary_code_string = BEIDOU_CNAV2_PREAMBLE;
+                    d_data_secondary_code_length = 0;
+                    d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                }
+            else
+                {
+                    d_symbols_per_bit = BEIDOU_CNAV2_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = true;
+                    d_trk_parameters.track_pilot = false;
+                    // synchronize and remove data secondary code
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
+                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                    d_data_secondary_code_string = BEIDOU_B2ad_SECONDARY_CODE;
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
                 }
         }

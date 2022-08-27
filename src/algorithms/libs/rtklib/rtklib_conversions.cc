@@ -84,7 +84,6 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
         case 'C':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
             // Update signal code
-            // if(sig_ == "5C") --> BeiDou B2a signal
             if (sig_ == "B1")
                 {
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L2I);
@@ -93,24 +92,18 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
                 {
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
                 }
+                /*
+            else if (sig_ == "5C")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
+                }*/
 
             break;
 
         default:
             rtklib_obs.sat = gnss_synchro.PRN;
         }
-
-    // Note that BeiDou week numbers do not need adjustment for foreseeable future. Consider change
-    // to more elegant solution
-    //    if(gnss_synchro.System == 'C')
-    //       {
-    //           rtklib_obs.time = bdt2gpst(bdt2time(week, gnss_synchro.RX_time));
-    //       }
-    //    else
-    //       {
-    //           rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
-    //       }
-    //
+        
     if (gnss_synchro.System == 'E')
         {
             rtklib_obs.time = gst2time(week, gnss_synchro.RX_time);

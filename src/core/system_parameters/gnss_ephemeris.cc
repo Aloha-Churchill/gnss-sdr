@@ -125,7 +125,7 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
                     predicted_doppler = 0.0;
                 }
         }
-    else if (this->System == 'B')  // Beidou
+    else if (this->System == 'B')  // Beidou --> change for B2a as well
         {
             if (band == 1)
                 {
@@ -138,6 +138,10 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
             else if (band == 3)
                 {
                     predicted_doppler = predicted_doppler_normalized * FREQ3_BDS;
+                }
+            else if (band == 5)
+                {
+                    predicted_doppler = predicted_doppler_normalized * FREQ5;
                 }
             else
                 {

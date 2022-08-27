@@ -29,6 +29,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
+ * Notes: check_b2a may need to modify this file
  * -------------------------------------------------------------------------
  */
 
@@ -65,7 +66,7 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
                                 out_streams_(out_streams)
 {
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2ad_CODE_RATE_HZ, BEDOU_B2A_OPT_ACQ_FS_SPS); // check if these are correct values!
+    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2ad_CODE_RATE_HZ, BEIDOU_B2A_OPT_ACQ_FS_SPS); 
 
     DLOG(INFO) << "role " << role;
 
@@ -88,11 +89,19 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_ == "cbyte")
+    if (item_type_ == "gr_complex")
         {
-            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
-            float_to_complex_ = gr::blocks::float_to_complex::make();
+            item_size_ = sizeof(gr_complex);
+            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+            DLOG(INFO) << "stream_to_vector("
+                       << stream_to_vector_->unique_id() << ")";
         }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
+    // if item_type_ check_b2a NEED TO ADD IN CASES FOR OTHER item_types_ --> mimick gps_l1 file
 
     if (in_streams_ > 1)
         {
@@ -222,18 +231,21 @@ void BeidouB2aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
+            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
             // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
             // nothing to connect
         }
+    
     else if (item_type_.compare("cbyte") == 0)
         {
             top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
             top_block->connect(float_to_complex_, 0, acquisition_, 0);
         }
+        
     else
         {
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
@@ -245,6 +257,7 @@ void BeidouB2aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
+            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
             // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
@@ -265,7 +278,7 @@ void BeidouB2aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-
+// check_b2a THIS IS WHERE ERROR IS COMING FROM in build macos on github, need to update code here
 gr::basic_block_sptr BeidouB2aPcpsAcquisition::get_left_block()
 {
     if (item_type_ == "gr_complex" || item_type_ == "cshort")

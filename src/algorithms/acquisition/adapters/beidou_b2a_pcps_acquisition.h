@@ -41,6 +41,7 @@
 #include "pcps_acquisition.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 #include <cstdint>
 #include <string>
 
@@ -165,6 +166,7 @@ private:
     std::weak_ptr<ChannelFsm> channel_fsm_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     Gnss_Synchro* gnss_synchro_;
     Acq_Conf acq_parameters_;
     std::string item_type_;

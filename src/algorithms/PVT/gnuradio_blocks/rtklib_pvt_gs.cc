@@ -142,6 +142,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_beidou_dnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code()),
       d_beidou_dnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code()),
       d_beidou_dnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code()),
+      
+      d_beidou_cnav2_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav2_Ephemeris>).hash_code()),
+      d_beidou_cnav2_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav2_Iono>).hash_code()),
+      d_beidou_cnav2_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav2_Utc_Model>).hash_code()),
+      d_beidou_cnav2_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav2_Almanac>).hash_code()),
+
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),

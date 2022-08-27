@@ -2,8 +2,8 @@
  * \file beidou_b2a_telemetry_decoder.cc
  * \brief Implementation of an adapter of a BEIDOU B2a CNAV2 data decoder block
  * to a TelemetryDecoderInterface
- * \note Code added as part of GSoC 2018 program
- * \author Dong Kyeong Lee, 2018. dole7890(at)colorado.edu
+ * \note Code added as part of GSoC 2018,2022 program
+ * \author Dong Kyeong Lee, 2018. dole7890(at)colorado.edu, Aloha Churchill, 2022. churchill.aloha@gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -59,7 +59,6 @@ BeidouB2aTelemetryDecoder::BeidouB2aTelemetryDecoder(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
 
 void BeidouB2aTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {

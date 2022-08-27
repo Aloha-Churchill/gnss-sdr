@@ -97,6 +97,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Beidou_B3I.h
     Beidou_B2a.h
     Beidou_DNAV.h
+    # Beidou_CNAV2.h maybe add in
     MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h

@@ -43,6 +43,7 @@ In the L5 band:
 - &#128752; Galileo E5b (centered at 1207.140 MHz) :white_check_mark:
 - &#128752; Galileo E5a (centered at 1176.450 MHz) :white_check_mark:
 - &#128752; GPS L5 (centered at 1176.450 MHz) :white_check_mark:
+- &#128752; BeiDou B2a (centered at 1176.450 MHz) :white_check_mark:
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
 raw sample file formats, generates processing outputs in standard formats,
@@ -1670,6 +1671,7 @@ identifiers:
 | Beidou B1I     |       B1       |
 | Galileo E6B    |       E6       |
 | Beidou B3I     |       B3       |
+| Beidou B2a     |       5C       |
 | GPS L2 L2C(M)  |       2S       |
 | Glonass L2 C/A |       2G       |
 | GPS L5         |       L5       |
