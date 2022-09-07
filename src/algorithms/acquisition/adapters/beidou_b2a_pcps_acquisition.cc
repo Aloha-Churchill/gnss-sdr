@@ -61,12 +61,11 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
                                 threshold_(0.0),
                                 doppler_center_(0),
                                 channel_(0),
-                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2ad_CODE_RATE_HZ, BEIDOU_B2A_OPT_ACQ_FS_SPS); 
+    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B2ad_CODE_RATE_HZ, 10e6); // checkb2a: parameters 
 
     DLOG(INFO) << "role " << role;
 
@@ -89,6 +88,7 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
+    /*
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -102,7 +102,12 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
     // if item_type_ check_b2a NEED TO ADD IN CASES FOR OTHER item_types_ --> mimick gps_l1 file
-
+    */
+    if (item_type_ == "cbyte")
+        {
+            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+            float_to_complex_ = gr::blocks::float_to_complex::make();
+        }
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -123,6 +128,7 @@ void BeidouB2aPcpsAcquisition::stop_acquisition()
 
 void BeidouB2aPcpsAcquisition::set_threshold(float threshold)
 {
+    /*
     float pfa = acq_parameters_.pfa;
 
     if (pfa == 0.0)
@@ -137,6 +143,11 @@ void BeidouB2aPcpsAcquisition::set_threshold(float threshold)
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
     acquisition_->set_threshold(threshold_);
+    */
+    threshold_ = threshold;
+
+    acquisition_->set_threshold(threshold_);
+   
 }
 
 
@@ -175,7 +186,7 @@ void BeidouB2aPcpsAcquisition::init()
     acquisition_->init();
 
     //added in
-    //set_local_code();
+    set_local_code();
 }
 
 
@@ -183,7 +194,7 @@ void BeidouB2aPcpsAcquisition::set_local_code()
 {
     volk_gnsssdr::vector<std::complex<float>> code(code_length_);
 
-    // beidou_b2ad_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+    beidou_b2ad_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
 
     own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
@@ -231,7 +242,6 @@ void BeidouB2aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
             // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
@@ -257,7 +267,7 @@ void BeidouB2aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            //top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
             // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
