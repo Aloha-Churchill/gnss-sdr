@@ -88,21 +88,6 @@ BeidouB2aPcpsAcquisition::BeidouB2aPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    /*
-    if (item_type_ == "gr_complex")
-        {
-            item_size_ = sizeof(gr_complex);
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-            DLOG(INFO) << "stream_to_vector("
-                       << stream_to_vector_->unique_id() << ")";
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-        }
-    // if item_type_ check_b2a NEED TO ADD IN CASES FOR OTHER item_types_ --> mimick gps_l1 file
-    */
     if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -128,22 +113,7 @@ void BeidouB2aPcpsAcquisition::stop_acquisition()
 
 void BeidouB2aPcpsAcquisition::set_threshold(float threshold)
 {
-    /*
-    float pfa = acq_parameters_.pfa;
 
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
-    acquisition_->set_threshold(threshold_);
-    */
     threshold_ = threshold;
 
     acquisition_->set_threshold(threshold_);
@@ -184,8 +154,6 @@ signed int BeidouB2aPcpsAcquisition::mag()
 void BeidouB2aPcpsAcquisition::init()
 {
     acquisition_->init();
-
-    //added in
     set_local_code();
 }
 
@@ -288,7 +256,7 @@ void BeidouB2aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-// check_b2a THIS IS WHERE ERROR IS COMING FROM in build macos on github, need to update code here
+
 gr::basic_block_sptr BeidouB2aPcpsAcquisition::get_left_block()
 {
     if (item_type_ == "gr_complex" || item_type_ == "cshort")
