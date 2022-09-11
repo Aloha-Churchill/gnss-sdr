@@ -70,8 +70,7 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
     minimum_tail_s_ = std::max(configuration->property("Acquisition_B3.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
-    minimum_tail_s_ = std::max(configuration->property("Acquisition_5C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_); // added for B2a
-
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_5C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
 
     minimum_tail_s_ = std::max(configuration->property("Tracking_1C.extend_correlation_symbols", 0.0) * GPS_L1_CA_CODE_PERIOD_S * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_2S.extend_correlation_symbols", 0.0) * GPS_L2_M_PERIOD_S * 2.0, minimum_tail_s_);

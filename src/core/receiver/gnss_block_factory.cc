@@ -456,7 +456,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     const unsigned int Channels_L5_count = configuration->property("Channels_L5.count", 0);
     const unsigned int Channels_B1_count = configuration->property("Channels_B1.count", 0);
     const unsigned int Channels_B3_count = configuration->property("Channels_B3.count", 0);
-    const unsigned int Channels_5C_count = configuration->property("Channels_5C.count", 0); // added for BeiDou B2a
+    const unsigned int Channels_5C_count = configuration->property("Channels_5C.count", 0);
     const unsigned int Channels_7X_count = configuration->property("Channels_7X.count", 0);
     const unsigned int Channels_E6_count = configuration->property("Channels_E6.count", 0);
 
